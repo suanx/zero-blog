@@ -55,8 +55,13 @@ export default function AdminLoginPage() {
       }
 
       router.push('/admin/dashboard');
-    } catch {
-      setError('网络连接失败，请检查网络后重试');
+    } catch (err: any) {
+      // fetch throws when: network error, CORS, or response is not valid JSON
+      console.error('[login] fetch error:', err);
+      const msg = err?.message?.includes('fetch')
+        ? '网络连接失败，请检查网络后重试'
+        : '服务器响应异常，请稍后重试';
+      setError(msg);
       setLoading(false);
     }
   };

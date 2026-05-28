@@ -24,9 +24,12 @@
       "dest": "/$1"
     }
   ],
-  "functions": {
-    "source": "app",
-    "include": ["api/**"],
-    "maxDuration": 30
-  }
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
 }
