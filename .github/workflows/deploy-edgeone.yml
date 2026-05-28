@@ -7,28 +7,29 @@ on:
 
 env:
   NODE_VERSION: "22.11.0"
+  PROJECT_NAME: zero-blog
 
 jobs:
   build-and-deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
     steps:
-      # ===== 拉取代码 =====
+      # ===== Checkout =====
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ===== 安装 Node.js =====
+      # ===== Setup Node.js =====
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      # ===== 安装依赖 =====
+      # ===== Install dependencies =====
       - name: Install dependencies
         run: npm ci
 
-      # ===== 构建 =====
+      # ===== Build =====
       - name: Build Next.js
         run: npm run build
         env:
@@ -36,6 +37,17 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
 
-      # ===== 部署到 EdgeOne Pages =====
+      # ===== Deploy =====
       - name: Deploy to EdgeOne Pages
-        run: npx edgeone pages deploy .next -n zero-blog -t ${{ secrets.EDGEONE_API_TOKEN }} -e production
+        run: npx edgeone pages deploy .next -n ${{ env.PROJECT_NAME }} -t ${{ secrets.EDGEONE_API_TOKEN }} -e production
+
+      # ===== Summary =====
+      - name: Deployment Summary
+        run: |
+          echo "### Deployed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project**: ${{ env.PROJECT_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: main" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Remember to set **Acceleration Region** to **Global (excl. China)** in EdgeOne Console if this is a new project." >> $GITHUB_STEP_SUMMARY
