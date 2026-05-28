@@ -6,29 +6,29 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22.11.0"
 
 jobs:
-  deploy:
+  build-and-deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
     steps:
-      # ── 拉取代码 ──────────────────────────────
+      # ===== 拉取代码 =====
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 安装 Node.js ─────────────────────────
+      # ===== 安装 Node.js =====
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      # ── 安装依赖 ──────────────────────────────
+      # ===== 安装依赖 =====
       - name: Install dependencies
         run: npm ci
 
-      # ── 构建 ──────────────────────────────────
+      # ===== 构建 =====
       - name: Build Next.js
         run: npm run build
         env:
@@ -36,11 +36,6 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
 
-      # ── 部署到 EdgeOne Pages ──────────────────
+      # ===== 部署到 EdgeOne Pages =====
       - name: Deploy to EdgeOne Pages
-        uses: edgeone/deploy-pages-action@main
-        with:
-          # 从 EdgeOne 控制台获取，参考下方说明
-          api-token: ${{ secrets.EDGEONE_API_TOKEN }}
-          # 项目名称（与 EdgeOne Pages 控制台一致）
-          project-name: zero-blog
+        run: npx edgeone pages deploy .next -n zero-blog -t ${{ secrets.EDGEONE_API_TOKEN }} -e production
